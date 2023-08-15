@@ -76,21 +76,24 @@ namespace TravelApi.Controllers
                 return BadRequest();
             }
 
-            _db.Reviews.Update(review);
+            if (user == review.User)
+            {
+                _db.Reviews.Update(review);
 
-            try
-            {
-                await _db.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!ReviewExists(id))
+                try
                 {
-                    return NotFound();
+                    await _db.SaveChangesAsync();
                 }
-                else
+                catch (DbUpdateConcurrencyException)
                 {
-                    throw;
+                    if (!ReviewExists(id))
+                    {
+                        return NotFound();
+                    }
+                    else
+                    {
+                        throw;
+                    }
                 }
             }
             return NoContent();
@@ -109,10 +112,17 @@ namespace TravelApi.Controllers
             {
                 return NotFound();
             }
+
+            if (user != review.User)
+            {
+                return Forbid();
+            }
             _db.Reviews.Remove(review);
             await _db.SaveChangesAsync();
             return NoContent();
         }
 
     }
+
 }
+
