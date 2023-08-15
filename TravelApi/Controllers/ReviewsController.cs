@@ -16,7 +16,7 @@ namespace TravelApi.Controllers
         }
 
         [HttpGet]
-        public async Task<List<Review>> Get(string title, string text, int rating)
+        public async Task<List<Review>> Get(string title, string text, int rating, string user)
         {
             IQueryable<Review> query = _db.Reviews.Include(m => m.Destination).AsQueryable();
 
@@ -33,6 +33,11 @@ namespace TravelApi.Controllers
             if (rating > 0)
             {
                 query = query.Where(entry => entry.Rating == rating);
+            }
+
+            if (user != null)
+            {
+                query = query.Where(entry => entry.User == user);
             }
 
             return await query.ToListAsync();
@@ -64,9 +69,9 @@ namespace TravelApi.Controllers
             }, review);
         }
         [HttpPut("{id}")]
-        public async Task<IActionResult> Put(int id, Review review)
+        public async Task<IActionResult> Put(int id, Review review, string user)
         {
-            if (id != review.ReviewId)
+            if (id != review.ReviewId && user == null)
             {
                 return BadRequest();
             }
@@ -97,10 +102,10 @@ namespace TravelApi.Controllers
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteReview(int id)
+        public async Task<IActionResult> DeleteReview(int id, string user)
         {
             Review review = await _db.Reviews.FindAsync(id);
-            if (review == null)
+            if (review == null && user == null)
             {
                 return NotFound();
             }
